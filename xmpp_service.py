@@ -17,6 +17,7 @@ class XMPPHandler(webapp.RequestHandler):
 		try:
 			request = json.loads(message.body)
 			assert request.has_key('request')
+			assert hasattr(Controller, request['request'])
 			f = getattr(Controller, request['request'])
 			if callable(f):
 				if request.has_key('arg') and \
@@ -27,7 +28,8 @@ class XMPPHandler(webapp.RequestHandler):
 					result = f({'sender': message.sender})
 		except Exception, e:
 			import sys, traceback
-			result = Controller.error_msg(''.join(traceback.format_exception(*sys.exc_info())))
+			tb = traceback.format_exception(*sys.exc_info())
+			result = Controller.error_msg(''.join(tb))
 		finally:
 			return json.dumps(result)
 
