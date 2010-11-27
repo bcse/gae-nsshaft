@@ -3,19 +3,36 @@ from google.appengine.api import xmpp
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 import simplejson as json
+from controller import Controller
+
 
 class XMPPHandler(webapp.RequestHandler):
 	def post(self):
 		message = xmpp.Message(self.request.POST)
-		try:
-			result = json.loads(message.body)
-		except:
-			message.reply(json.dumps({'error': 'JSON parse error.'}))
-		else:
-			message.reply(json.dumps(result))
+		result = self.dispatch(message)
+		message.reply(result)
 
-application = webapp.WSGIApplication([('/_ah/xmpp/message/chat/', XMPPHandler)],
-                                     debug=True)
+
+	def dispatch(self, message):
+		try:
+			request = json.loads(message.body)
+			assert request.has_key('request')
+			f = getattr(Controller, request['request'])
+			if callable(f):
+				if request.has_key('arg'):
+					result = f(dict(request.get('arg'), sender=message.sender))
+				else:
+					result = f({'sender': message.sender})
+		except Exception, e:
+			import sys, traceback
+			result = Controller.error_msg(''.join(traceback.format_exception(*sys.exc_info())))
+		finally:
+			return json.dumps(result)
+
+
+application = webapp.WSGIApplication(
+	[('/_ah/xmpp/message/chat/', XMPPHandler)],
+	debug=True)
 
 def main():
 	run_wsgi_app(application)
