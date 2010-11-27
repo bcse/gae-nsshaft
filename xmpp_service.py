@@ -29,7 +29,9 @@ class XMPPHandler(webapp.RequestHandler):
 		except Exception, e:
 			import sys, traceback
 			tb = traceback.format_exception(*sys.exc_info())
-			result = Controller.error_msg(''.join(tb))
+			result = Controller.error_msg({
+				'request': message.body,
+				'traceback': ''.join(tb)})
 		finally:
 			return json.dumps(result)
 
