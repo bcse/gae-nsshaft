@@ -19,8 +19,10 @@ class XMPPHandler(webapp.RequestHandler):
 			assert request.has_key('request')
 			f = getattr(Controller, request['request'])
 			if callable(f):
-				if request.has_key('arg'):
-					result = f(dict(request.get('arg'), sender=message.sender))
+				if request.has_key('arg') and \
+				   hasattr(request['arg'], '__setitem__'):
+					request['arg']['sender'] = message.sender
+					result = f(request['arg'])
 				else:
 					result = f({'sender': message.sender})
 		except Exception, e:
