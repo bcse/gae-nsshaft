@@ -18,22 +18,25 @@ class XMPPHandler(webapp.RequestHandler):
 			request = json.loads(message.body)
 			assert request.has_key('request')
 			assert hasattr(Controller, request['request'])
+			assert callable(getattr(Controller, request['request']))
 			f = getattr(Controller, request['request'])
-			if callable(f):
-				if request.has_key('arg') and \
-				   hasattr(request['arg'], '__setitem__'):
-					request['arg']['sender'] = message.sender
-					result = f(request['arg'])
-				else:
-					result = f({'sender': message.sender})
+			if request.has_key('arg') and \
+			   hasattr(request['arg'], '__setitem__'):
+				request['arg']['sender'] = message.sender
+				result = f(request['arg'])
+			else:
+				result = f({'sender': message.sender})
 		except Exception, e:
 			import sys, traceback
 			tb = traceback.format_exception(*sys.exc_info())
-			result = Controller.error_msg({
-				'request': message.body,
-				'traceback': ''.join(tb)})
+			result = json.dumps({
+				'response': 'unknown',
+				'stat': 'fail',
+				'msg': {
+					'raw_request': message.body,
+					'traceback': ''.join(tb)}})
 		finally:
-			return json.dumps(result)
+			return result
 
 
 application = webapp.WSGIApplication(
