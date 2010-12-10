@@ -1,4 +1,5 @@
 import simplejson as json
+import model
 
 
 def format_message(type='unknown', stat='fail', msg='Unknown request.'):
@@ -43,7 +44,9 @@ class Controller:
 
 	@staticmethod
 	def list_game(arg):
-		return format_message('list_game', 'ok', 'Not Implemented.')
+		return format_message('list_game', 'ok', {
+			'games': [{'id': str(g.key()), 'name': g.title} for g in model.Game.all()]
+			})
 
 
 	@staticmethod
