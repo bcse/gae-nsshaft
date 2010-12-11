@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from google.appengine.api import xmpp
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 import simplejson as json
 from controller import Controller
+from model import Player
 
 
 class XMPPHandler(webapp.RequestHandler):
@@ -16,16 +18,22 @@ class XMPPHandler(webapp.RequestHandler):
 	def dispatch(self, message):
 		try:
 			request = json.loads(message.body)
-			assert request.has_key('request')
-			assert hasattr(Controller, request['request'])
+			assert request.has_key('request') # Any request must have this item
 			f = getattr(Controller, request['request'])
-			assert callable(f)
-			if request.has_key('arg') and \
-			   hasattr(request['arg'], '__setitem__'):
-				request['arg']['sender'] = message.sender
-				result = f(request['arg'])
-			else:
-				result = f({'sender': message.sender})
+			assert callable(f) # Make sure the attribute is a method but not a property
+
+			# Get Player record from server.
+			sender = db.IM('xmpp', message.sender)
+			player = Player.all().filter('address =', sender).fetch(limit=1)
+			if len(player) == 0: # Create a new record for new Player.
+				player = Player(address=sender)
+				player.put()
+
+			# Take action
+			arg = request['arg'] if request.has_key('arg') else {}
+			assert hasattr(arg, '__setitem__') # arg should be a dict()
+			arg['sender'] = player # append sender to arguments
+			result = f(arg)
 		except Exception, e:
 			import sys, traceback
 			tb = traceback.format_exception(*sys.exc_info())
