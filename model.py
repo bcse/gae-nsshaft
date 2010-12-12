@@ -9,7 +9,6 @@ class Game(db.Model): # List games on the server
 class BaseRoom(polymodel.PolyModel): # List rooms on the server
 	name = db.StringProperty(required=True)
 	capacity = db.IntegerProperty(required=True)
-	is_active = db.BooleanProperty(default=True, required=True) # Pseudo-delete method
 	game = db.ReferenceProperty(Game, collection_name='rooms') # game:room = 1:*
 	#player_status # memcached; auto-volatile (position, health)
 	pass
