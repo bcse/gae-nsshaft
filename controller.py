@@ -1,59 +1,66 @@
 import simplejson as json
-import model
+from model import Game
+from model import Player
 
 
 def format_message(type='unknown', stat='fail', msg='Unknown request.'):
 	return json.dumps({'response': type, 'stat': stat, 'msg': msg})
 
 
-class Controller:
-	@staticmethod
-	def list_room(arg):
-		return format_message('list_room', 'ok', 'Not Implemented.')
+def import_game(module_name):
+	return __import__('game.%s' % str(module_name), fromlist=['game'])
 
 
-	@staticmethod
-	def create_room(arg):
-		return format_message('create_room', 'ok', 'Not Implemented.')
+def list_room(arg):
+	return format_message('list_room', 'ok', 'Not Implemented.')
 
 
-	@staticmethod
-	def list_player(arg):
-		return format_message('list_player', 'ok', 'Not Implemented.')
+def create_room(arg):
+	game_info = Game.get(arg['game']['id'])
+	player = arg['sender']
+	assert isinstance(game_info, Game)
+	assert isinstance(player, Player)
+
+	# Create the room and join current player
+	game = import_game(game_info.module_name)
+	room = game.create_room(arg)
+	player.room = room
+	player.put()
+
+	return format_message('create_room', 'ok', {
+		'room': str(room.key())
+		})
 
 
-	@staticmethod
-	def join_room(arg):
-		return format_message('join_room', 'ok', 'Not Implemented.')
+def list_player(arg):
+	return format_message('list_player', 'ok', 'Not Implemented.')
 
 
-	@staticmethod
-	def leave_room(arg):
-		return format_message('leave_room', 'ok', 'Not Implemented.')
+def join_room(arg):
+	return format_message('join_room', 'ok', 'Not Implemented.')
 
 
-	@staticmethod
-	def ready_game(arg):
-		return format_message('ready_game', 'ok', 'Not Implemented.')
+def leave_room(arg):
+	return format_message('leave_room', 'ok', 'Not Implemented.')
 
 
-	@staticmethod
-	def update_status(arg):
-		return format_message('update_status', 'ok', 'Not Implemented.')
+def ready_game(arg):
+	return format_message('ready_game', 'ok', 'Not Implemented.')
 
 
-	@staticmethod
-	def list_game(arg):
-		return format_message('list_game', 'ok', {
-			'games': [{'id': str(g.key()), 'name': g.title} for g in model.Game.all()]
-			})
+def update_status(arg):
+	return format_message('update_status', 'ok', 'Not Implemented.')
 
 
-	@staticmethod
-	def start_game(arg):
-		return format_message('start_game', 'ok', 'Not Implemented.')
+def list_game(arg):
+	return format_message('list_game', 'ok', {
+		'games': [{'id': str(g.key()), 'name': g.title} for g in Game.all()]
+		})
 
 
-	@staticmethod
-	def end_game(arg):
-		return format_message('end_game', 'ok', 'Not Implemented.')
+def start_game(arg):
+	return format_message('start_game', 'ok', 'Not Implemented.')
+
+
+def end_game(arg):
+	return format_message('end_game', 'ok', 'Not Implemented.')
