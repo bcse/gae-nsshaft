@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
-import model
 
 
 class AdminHandler(webapp.RequestHandler):
@@ -12,7 +11,7 @@ class AdminHandler(webapp.RequestHandler):
 			f = getattr(self, method)
 			assert callable(f)
 			f()
-		except Exception, e:
+		except Exception:
 			self.response.out.write(u'Hello, hello, baby; You called, I can’t hear a thing')
 
 	def game_new(self):
