@@ -15,7 +15,7 @@ class BaseRoom(polymodel.PolyModel): # List rooms on the server
 	pass
 
 class Player(db.Model): # List players on the server
-	address = db.IMProperty(required=True)
+	account = db.IMProperty(required=True)
 	is_ready = db.BooleanProperty(default=False, required=True)
 	room = db.ReferenceProperty(BaseRoom, collection_name='players') # room:player = 1:*
 	#name # Leave for future
