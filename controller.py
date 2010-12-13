@@ -1,3 +1,4 @@
+from google.appengine.ext import db
 import simplejson as json
 from model import Game
 from model import Player
@@ -12,7 +13,15 @@ def import_game(module_name):
 
 
 def list_room(arg):
-	return format_message('list_room', 'ok', 'Not Implemented.')
+	rooms = db.GqlQuery('SELECT * FROM BaseRoom') # Workaround for Issue 2053
+	return format_message('list_room', 'ok', {
+		'rooms': [{
+			'id': str(r.key()),
+			'name': r.name,
+			'game': r.game.title,
+			'remain_capacity': r.capacity - r.players.count()
+			} for r in rooms if r.players.count() > 0]
+		})
 
 
 def create_room(arg):
