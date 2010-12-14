@@ -18,9 +18,11 @@ class XMPPHandler(webapp.RequestHandler):
 	def dispatch(self, message):
 		try:
 			request = json.loads(message.body)
-			assert request.has_key('request') # Any request must have this item
-			f = getattr(controller, request['request'])
-			assert callable(f) # Make sure the attribute is a method but not a property
+			assert isinstance(request, dict), 'Request should be a dict().'
+			assert 'request' in request, 'Required argument is missing: "request".'
+			method_name = str(request['request'])
+			f = getattr(controller, method_name, None)
+			assert callable(f), 'You are requesting an unknown API.'
 
 			# Get Player record from server.
 			sender = db.IM('xmpp', message.sender.split('/')[0])
@@ -30,17 +32,23 @@ class XMPPHandler(webapp.RequestHandler):
 				player.put()
 			else:
 				player = player[0]
+			assert isinstance(player, Player), 'Failed to get player data.'
 
 			# Take action
-			arg = request['arg'] if request.has_key('arg') else {}
-			assert hasattr(arg, '__setitem__') # arg should be a dict()
+			arg = request['arg'] if 'arg' in request else {}
+			assert isinstance(arg, dict), 'Arguments should be a dict()'
 			arg['sender'] = player # append sender to arguments
 			result = f(arg)
+		except AssertionError, e:
+			result = json.dumps({
+				'response': method_name if 'method_name' in locals() else 'unknown',
+				'stat': 'fail',
+				'msg': str(e)})
 		except:
 			import sys, traceback
 			tb = traceback.format_exception(*sys.exc_info())
 			result = json.dumps({
-				'response': 'unknown',
+				'response': method_name if 'method_name' in locals() else 'unknown',
 				'stat': 'fail',
 				'msg': {
 					'raw_request': message.body,
