@@ -21,6 +21,7 @@ class XMPPHandler(webapp.RequestHandler):
 			assert isinstance(request, dict), 'Request should be a dict().'
 			assert 'request' in request, 'Required argument is missing: "request".'
 			method_name = str(request['request'])
+			assert not method_name.startswith('_'), 'You are not allowed to call private API.'
 			f = getattr(controller, method_name, None)
 			assert callable(f), 'You are requesting an unknown API.'
 
