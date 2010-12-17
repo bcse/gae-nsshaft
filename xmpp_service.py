@@ -33,7 +33,7 @@ class XMPPHandler(webapp.RequestHandler):
 				player.put()
 			else:
 				player = player[0]
-			assert isinstance(player, Player), 'Failed to get player data.'
+			assert player is not None, 'Failed to get player data.'
 
 			# Take action
 			arg = request['arg'] if 'arg' in request else {}

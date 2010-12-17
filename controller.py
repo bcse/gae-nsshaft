@@ -87,9 +87,6 @@ def ready_game(arg):
 	player.is_ready = bool(arg['is_ready'])
 	player.put()
 
-	if arg.get('broadcast', 0):
-		pass
-
 	return _format_message('ready_game', 'ok', {
 		'player': player.account.address,
 		'is_ready': int(arg['is_ready'])
