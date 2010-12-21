@@ -5,8 +5,13 @@ from model import Game
 from model import Room
 
 
-def _create_map(width, height):
-	map = {'plain': [], 'thorn': [], 'flip': []}
+def _create_map(width, height, plate_width=5):
+	import random
+	plate_min_distance = 2
+	mod_value = (width - plate_width) // plate_min_distance
+	if mod_value <= 0:
+		mod_value = 1
+	map = {'plain': [[plate_width // 2 + plate_min_distance * random.randint(0, mod_value), i] for i in range(0, height)]}
 	return json.dumps(map)
 
 
