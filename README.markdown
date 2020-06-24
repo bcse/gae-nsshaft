@@ -1,7 +1,7 @@
-NS-SHAFT
-========
+Shaft
+=====
 
-NS-SHAFT is a game lobby service based on Google App Engine and XMPP.
+Shaft is a game lobby service based on Google App Engine and XMPP.
 
 
 
